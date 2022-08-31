@@ -1,1 +1,1 @@
-# coin_tracker
+# Coin tracker
