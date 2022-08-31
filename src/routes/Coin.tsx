@@ -1,8 +1,10 @@
 import { useQuery } from 'react-query';
-import { Link, useMatch } from 'react-router-dom';
+import { Link, useMatch, useNavigate } from 'react-router-dom';
 import { Outlet, useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { fetchCoinInfo, fetchCoinTickers } from '../api';
+import { Helmet } from 'react-helmet';
+
 const Container = styled.div`
   padding: 0px 20px;
   max-width: 480px;
@@ -15,21 +17,21 @@ const Header = styled.header`
   justify-content: center;
   align-items: center;
   margin: 30px 0px;
+  position: relative;
 `;
 const Title = styled.h1`
   font-size: 48px;
   color: ${(props) => props.theme.accentColor};
 `;
-
+const ArrowImg = styled.img`
+  height: 50px;
+  display: block;
+  position: absolute;
+  left: 15px;
+`;
 const Loader = styled.span`
   display: block;
   text-align: center;
-`;
-
-const Img = styled.img`
-  width: 40px;
-  height: 40px;
-  margin-right: 20px;
 `;
 
 const Overview = styled.div`
@@ -85,6 +87,7 @@ const Tab = styled.span<{ isActive: boolean }>`
     }
   }
 `;
+
 interface RouteParams {
   coinId: string;
 }
@@ -155,32 +158,27 @@ function Coin() {
     () => fetchCoinInfo(coinId)
   );
   const { isLoading: tickersLoading, data: tickersData } =
-    useQuery<ITickersData>(['tickers', coinId], () => fetchCoinTickers(coinId));
-  /* const [loading, setLoading] = useState(true);
-  const [info, setInfo] = useState<IInfoData>();
-  const [priceInfo, setPriceInfo] = useState<IPriceData>();
-  useEffect(() => {
-    (async () => {
-      const infoData = await (
-        await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-      ).json();
-      const priceData = await (
-        await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
-      ).json();
-      setInfo(infoData);
-      setPriceInfo(priceData);
-      setLoading(false);
-    })();
-  }, [coinId]); */
-
+    useQuery<ITickersData>(
+      ['tickers', coinId],
+      () => fetchCoinTickers(coinId),
+      {
+        refetchInterval: 5000,
+      }
+    );
+  const navigate = useNavigate();
   const loading = infoLoading || tickersLoading;
   return (
     <Container>
+      <Helmet>
+        <title>{name ? name : loading ? 'Loading...' : infoData?.name}</title>
+      </Helmet>
       <Header>
-        {/* <Img
-          src={`https://coinicons-api.vercel.app/api/icon/${coin?.symbol.toLowerCase()}`}
-        /> */}
-        <Title>{name ? name : loading ? 'Loading...' : infoData?.name}</Title>
+        <Title>
+          <Link to={'/'}>
+            <ArrowImg src={require(`../icons/arrow-left-s-line.png`)} />
+          </Link>
+          {name ? name : loading ? 'Loading...' : infoData?.name}
+        </Title>
       </Header>
       {loading ? (
         <Loader>Loading...</Loader>
@@ -196,8 +194,8 @@ function Coin() {
               <span>${infoData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
-              <span>Open Source:</span>
-              <span>{infoData?.open_source ? 'Yes' : 'No'}</span>
+              <span>Price:</span>
+              <span>$ {tickersData?.quotes.USD.price.toFixed(3)}</span>
             </OverviewItem>
           </Overview>
           <Description>{infoData?.description}</Description>
@@ -220,7 +218,7 @@ function Coin() {
               <Link to={'price'}>Price</Link>
             </Tab>
           </Tabs>
-          <Outlet />
+          <Outlet context={{ coinId }} />
         </>
       )}
     </Container>
