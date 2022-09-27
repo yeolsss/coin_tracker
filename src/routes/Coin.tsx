@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import { Link, useMatch, useNavigate } from 'react-router-dom';
+import { Link, useMatch } from 'react-router-dom';
 import { Outlet, useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { fetchCoinInfo, fetchCoinTickers } from '../api';
@@ -114,6 +114,7 @@ interface IInfoData {
   first_data_at: string;
   last_data_at: string;
 }
+
 interface ITickersData {
   id: string;
   name: string;
@@ -147,8 +148,9 @@ interface ITickersData {
     };
   };
 }
+interface ICoinProps {}
 
-function Coin() {
+function Coin({}: ICoinProps) {
   const { coinId } = useParams<keyof RouteParams>() as RouteParams;
   const { name } = useLocation() as unknown as LocationSate;
   const priceMatch = useMatch('/:coinId/price');
@@ -165,7 +167,6 @@ function Coin() {
         refetchInterval: 5000,
       }
     );
-  const navigate = useNavigate();
   const loading = infoLoading || tickersLoading;
   return (
     <Container>
@@ -191,7 +192,7 @@ function Coin() {
             </OverviewItem>
             <OverviewItem>
               <span>Symbol:</span>
-              <span>${infoData?.symbol}</span>
+              <span>{infoData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Price:</span>

@@ -2,6 +2,8 @@ import { useQuery } from 'react-query';
 import { useOutletContext } from 'react-router-dom';
 import { fetchCoinHistory } from '../api';
 import ApexChart from 'react-apexcharts';
+import { useRecoilValue } from 'recoil';
+import { isDarkAtom } from '../atoms';
 
 interface IOutletContext {
   coinId: string;
@@ -17,7 +19,6 @@ interface ICoinData {
   volume: string;
   market_cap: number;
 }
-
 function convertDate(milliSecond: number) {
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   const data = new Date(milliSecond * 1000); //Date객체 생성
@@ -36,6 +37,8 @@ function Chart() {
     fetchCoinHistory(coinId)
   );
 
+  const isDark = useRecoilValue(isDarkAtom);
+
   return (
     <div>
       {isLoading ? (
@@ -51,7 +54,7 @@ function Chart() {
           ]}
           options={{
             theme: {
-              mode: 'dark',
+              mode: isDark ? 'dark' : 'light',
             },
             chart: {
               height: 300,

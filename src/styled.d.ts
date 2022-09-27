@@ -9,5 +9,6 @@ declare module 'styled-components' {
     accentColor: string;
     overViewItemColor: string;
     tabAccentColor: string;
+    cardBgColor: string;
   }
 }
